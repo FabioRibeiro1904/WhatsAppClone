@@ -1,0 +1,175 @@
+@page "/register"
+@inject NavigationManager Navigation
+@inject IUserService UserService
+@rendermode InteractiveServer
+
+<!-- Tela de Registro do WhatsApp -->
+<div style="min-height: 100vh; background: #075e54; display: flex; align-items: center; justify-content: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    <div style="background: white; width: 100%; max-width: 400px; margin: 20px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+        
+        <!-- Header -->
+        <div style="background: #075e54; padding: 40px 30px; text-align: center; color: white; position: relative;">
+            <button @onclick="GoBack" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: white; font-size: 20px; cursor: pointer;">
+                ←
+            </button>
+            <div style="font-size: 60px; margin-bottom: 10px;">�</div>
+            <h1 style="margin: 0; font-size: 24px; font-weight: normal;">WhatsApp</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.8; font-size: 14px;">Criar nova conta</p>
+        </div>
+
+        <!-- Formulário -->
+        <div style="padding: 30px;">
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div style="background: #ffebee; color: #c62828; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; border-left: 4px solid #c62828;">
+                    @errorMessage
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div style="background: #e8f5e8; color: #2e7d32; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; border-left: 4px solid #4caf50;">
+                    @successMessage
+                </div>
+            }
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: #666; font-size: 14px; margin-bottom: 8px;">Nome completo</label>
+                <input @bind="name" 
+                       style="width: 100%; padding: 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box;" 
+                       placeholder="Digite seu nome completo" />
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: #666; font-size: 14px; margin-bottom: 8px;">Usuário</label>
+                <input @bind="username" 
+                       style="width: 100%; padding: 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box;" 
+                       placeholder="Escolha um nome de usuário" />
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: #666; font-size: 14px; margin-bottom: 8px;">Email</label>
+                <input @bind="email" type="email"
+                       style="width: 100%; padding: 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box;" 
+                       placeholder="Digite seu email" />
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: #666; font-size: 14px; margin-bottom: 8px;">Senha</label>
+                <input @bind="password" type="password" 
+                       style="width: 100%; padding: 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box;" 
+                       placeholder="Crie uma senha segura" />
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; color: #666; font-size: 14px; margin-bottom: 8px;">Confirmar senha</label>
+                <input @bind="confirmPassword" type="password" 
+                       style="width: 100%; padding: 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box;" 
+                       placeholder="Confirme sua senha" />
+            </div>
+
+            <button @onclick="CreateAccount" disabled="@isLoading" 
+                    style="width: 100%; background: #25d366; color: white; border: none; padding: 15px; border-radius: 25px; font-size: 16px; cursor: pointer; transition: background 0.3s; font-weight: 500;">
+                @if (isLoading)
+                {
+                    <span>Criando conta...</span>
+                }
+                else
+                {
+                    <span>Criar conta</span>
+                }
+            </button>
+
+            <!-- Link para login -->
+            <div style="text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
+                <p style="color: #666; font-size: 14px; margin-bottom: 10px;">Já tem uma conta?</p>
+                <button @onclick="GoToLogin" 
+                        style="background: transparent; color: #25d366; border: none; font-size: 14px; cursor: pointer; text-decoration: underline;">
+                    Fazer login
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string username = string.Empty;
+    private string name = string.Empty;
+    private string email = string.Empty;
+    private string password = string.Empty;
+    private string confirmPassword = string.Empty;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+    private bool isLoading = false;
+
+    private async Task CreateAccount()
+    {
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(name) || 
+                string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+            {
+                errorMessage = "Todos os campos são obrigatórios.";
+                return;
+            }
+
+            if (password != confirmPassword)
+            {
+                errorMessage = "As senhas não coincidem.";
+                return;
+            }
+
+            if (password.Length < 6)
+            {
+                errorMessage = "A senha deve ter pelo menos 6 caracteres.";
+                return;
+            }
+
+            var registerDto = new RegisterDto
+            {
+                Username = username,
+                Name = name,
+                Email = email,
+                Password = password
+            };
+
+            var result = await UserService.RegisterAsync(registerDto);
+
+            if (result != null)
+            {
+                successMessage = "Conta criada com sucesso! Redirecionando para o login...";
+                StateHasChanged();
+                await Task.Delay(2000);
+                Navigation.NavigateTo("/login");
+            }
+            else
+            {
+                errorMessage = "Usuário ou email já existe. Tente novos dados.";
+            }
+        }
+        catch
+        {
+            errorMessage = "Erro interno do servidor. Tente novamente mais tarde.";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/login-whatsapp");
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

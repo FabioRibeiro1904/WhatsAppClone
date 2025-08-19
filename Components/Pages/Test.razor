@@ -1,0 +1,19 @@
+@page "/test"
+@rendermode InteractiveServer
+
+<h1>Teste de Funcionamento</h1>
+<p>Se você está vendo essa página, o Blazor está funcionando!</p>
+<p>Data atual: @DateTime.Now</p>
+
+<button @onclick="UpdateTime">Atualizar Hora</button>
+
+<p>Cliques: @clickCount</p>
+
+@code {
+    private int clickCount = 0;
+
+    private void UpdateTime()
+    {
+        clickCount++;
+    }
+}

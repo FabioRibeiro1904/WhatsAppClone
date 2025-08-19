@@ -1,0 +1,885 @@
+﻿@page "/home"
+@page "/chat"
+@using Microsoft.AspNetCore.SignalR.Client
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IChatService ChatService
+@inject IUserService UserService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+@rendermode InteractiveServer
+
+<PageTitle>WhatsApp Clone</PageTitle>
+
+@if (currentUser == null)
+{
+    <div class="loading-container">
+        <div class="loading-spinner">
+            <i class="fab fa-whatsapp"></i>
+            <p>Carregando WhatsApp Clone...</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="whatsapp-container" @onclick="CloseChatMenuIfOpen">
+               }
+        catch
+        {
+        } Sidebar with chats list -->
+        <div class="chats-sidebar">
+            <div class="sidebar-header">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        @if (!string.IsNullOrEmpty(currentUser.ProfilePicture))
+                        {
+                            <img src="@currentUser.ProfilePicture" alt="Profile" />
+                        }
+                        else
+                        {
+                            <div class="avatar-placeholder">
+                                @currentUser.Name.Substring(0, 1).ToUpper()
+                            </div>
+                        }
+                    </div>
+                    <div class="user-details">
+                        <h4>@currentUser.Name</h4>
+                        <p>@currentUser.Status</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-icon" @onclick="ShowNewChatModal" title="Nova Conversa">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="btn-icon" @onclick="Logout" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="search-bar">
+                <div class="search-input">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Buscar ou iniciar nova conversa" @bind="searchTerm" @oninput="HandleSearch" />
+                </div>
+            </div>
+
+            <div class="chats-list">
+                @if (chats.Any())
+                {
+                    @foreach (var chat in chats)
+                    {
+                        <div class="chat-item @(selectedChat?.Id == chat.Id ? "active" : "")" @onclick="() => SelectChat(chat)">
+                            <div class="chat-avatar">
+                                @if (chat.IsGroup)
+                                {
+                                    @if (!string.IsNullOrEmpty(chat.GroupPicture))
+                                    {
+                                        <img src="@chat.GroupPicture" alt="@chat.Name" />
+                                    }
+                                    else
+                                    {
+                                        <div class="avatar-placeholder group">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    var otherUser = chat.Participants.FirstOrDefault(p => p.Id != currentUser.Id);
+                                    @if (otherUser != null)
+                                    {
+                                        @if (!string.IsNullOrEmpty(otherUser.ProfilePicture))
+                                        {
+                                            <img src="@otherUser.ProfilePicture" alt="@otherUser.Name" />
+                                        }
+                                        else
+                                        {
+                                            <div class="avatar-placeholder">
+                                                @otherUser.Name.Substring(0, 1).ToUpper()
+                                            </div>
+                                        }
+                                        @if (otherUser.IsOnline)
+                                        {
+                                            <div class="online-indicator"></div>
+                                        }
+                                    }
+                                }
+                            </div>
+                            <div class="chat-info">
+                                <div class="chat-header">
+                                    <h5>@chat.Name</h5>
+                                    @if (chat.LastMessage != null)
+                                    {
+                                        <span class="last-message-time">@FormatTime(chat.LastMessage.SentAt)</span>
+                                    }
+                                </div>
+                                <div class="chat-preview">
+                                    @if (chat.LastMessage != null)
+                                    {
+                                        <p class="last-message">
+                                            @if (chat.LastMessage.SenderId == currentUser.Id)
+                                            {
+                                                <span class="message-status-small">
+                                                    @if (chat.LastMessage.Status == MessageStatus.Sent)
+                                                    {
+                                                        <i class="fas fa-check" style="color: #667781; font-size: 0.75rem;"></i>
+                                                    }
+                                                    else if (chat.LastMessage.Status == MessageStatus.Delivered)
+                                                    {
+                                                        <i class="fas fa-check-double" style="color: #667781; font-size: 0.75rem;"></i>
+                                                    }
+                                                    else if (chat.LastMessage.Status == MessageStatus.Read)
+                                                    {
+                                                        <i class="fas fa-check-double" style="color: #53bdeb; font-size: 0.75rem;"></i>
+                                                    }
+                                                </span>
+                                            }
+                                            @GetMessagePreview(chat.LastMessage)
+                                        </p>
+                                    }
+                                    else
+                                    {
+                                        <p class="last-message">Ainda não há mensagens</p>
+                                    }
+                                    @if (chat.UnreadCount > 0)
+                                    {
+                                        <span class="unread-badge">@chat.UnreadCount</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="no-chats">
+                        <i class="fas fa-comments"></i>
+                        <p>Ainda não há conversas</p>
+                        <button class="btn btn-primary" @onclick="ShowNewChatModal">Iniciar nova conversa</button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Main chat area -->
+        <div class="chat-main">
+            @if (selectedChat == null)
+            {
+                <div class="welcome-screen">
+                    <div class="welcome-content">
+                        <i class="fab fa-whatsapp"></i>
+                        <h2>WhatsApp Clone</h2>
+                        <p>Envie e receba mensagens sem manter seu telefone online.</p>
+                        <p>Use o WhatsApp Clone em até 4 dispositivos conectados e 1 telefone ao mesmo tempo.</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="chat-header">
+                    <div class="chat-info">
+                        <div class="chat-avatar">
+                            @if (selectedChat.IsGroup)
+                            {
+                                @if (!string.IsNullOrEmpty(selectedChat.GroupPicture))
+                                {
+                                    <img src="@selectedChat.GroupPicture" alt="@selectedChat.Name" />
+                                }
+                                else
+                                {
+                                    <div class="avatar-placeholder group">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                var otherUser = selectedChat.Participants.FirstOrDefault(p => p.Id != currentUser.Id);
+                                @if (otherUser != null)
+                                {
+                                    @if (!string.IsNullOrEmpty(otherUser.ProfilePicture))
+                                    {
+                                        <img src="@otherUser.ProfilePicture" alt="@otherUser.Name" />
+                                    }
+                                    else
+                                    {
+                                        <div class="avatar-placeholder">
+                                            @otherUser.Name.Substring(0, 1).ToUpper()
+                                        </div>
+                                    }
+                                    @if (otherUser.IsOnline)
+                                    {
+                                        <div class="online-indicator"></div>
+                                    }
+                                }
+                            }
+                        </div>
+                        <div class="chat-details">
+                            <h4>@selectedChat.Name</h4>
+                            @if (selectedChat.IsGroup)
+                            {
+                                <p>@selectedChat.Participants.Count membros</p>
+                            }
+                            else
+                            {
+                                var otherUser = selectedChat.Participants.FirstOrDefault(p => p.Id != currentUser.Id);
+                                <p>@(otherUser?.IsOnline == true ? "online" : $"visto por último {FormatLastSeen(otherUser?.LastSeen)}")</p>
+                            }
+                            @if (typingUsers.Any())
+                            {
+                                <p class="typing-indicator">
+                                    <span class="typing-dots">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </span>
+                                    @string.Join(", ", typingUsers) @(typingUsers.Count == 1 ? " está" : " estão") digitando...
+                                </p>
+                            }
+                        </div>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="btn-icon" title="Buscar">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <div style="position: relative;">
+                            <button class="btn-icon" title="Menu" @onclick="ToggleChatMenu" @onclick:stopPropagation="true">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            @if (showChatMenu)
+                            {
+                                <div class="chat-menu-dropdown" @onclick:stopPropagation="true">
+                                    <button @onclick="() => DeleteChat(selectedChat!.Id)" class="menu-item danger">
+                                        <i class="fas fa-trash"></i>
+                                        Deletar conversa
+                                    </button>
+                                    <button @onclick="() => ClearChatHistory(selectedChat!.Id)" class="menu-item">
+                                        <i class="fas fa-broom"></i>
+                                        Limpar histórico
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="messages-container" @ref="messagesContainer">
+                    @if (messages.Any())
+                    {
+                        @foreach (var message in messages)
+                        {
+                            <div class="message @(message.SenderId == currentUser.Id ? "sent" : "received")">
+                                @if (selectedChat.IsGroup && message.SenderId != currentUser.Id)
+                                {
+                                    <div class="sender-name">@message.SenderName</div>
+                                }
+                                <div class="message-bubble">
+                                    @if (message.ReplyToMessageId.HasValue)
+                                    {
+                                        <div class="reply-preview">
+                                            <div class="reply-line"></div>
+                                            <div class="reply-content">
+                                                <strong>@message.ReplyToSenderName</strong>
+                                                <p>@message.ReplyToContent</p>
+                                            </div>
+                                        </div>
+                                    }
+                                    <div class="message-content">@message.Content</div>
+                                    <div class="message-time">
+                                        @FormatTime(message.SentAt)
+                                        @if (message.SenderId == currentUser.Id)
+                                        {
+                                            <span class="message-status">
+                                                @if (message.Status == MessageStatus.Sent)
+                                                {
+                                                    <i class="fas fa-check" style="color: #667781;"></i>
+                                                }
+                                                else if (message.Status == MessageStatus.Delivered)
+                                                {
+                                                    <i class="fas fa-check-double" style="color: #667781;"></i>
+                                                }
+                                                else if (message.Status == MessageStatus.Read)
+                                                {
+                                                    <i class="fas fa-check-double" style="color: #53bdeb;"></i>
+                                                }
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="no-messages">
+                            <p>Ainda não há mensagens. Inicie a conversa!</p>
+                        </div>
+                    }
+                </div>
+
+                <div class="message-input">
+                    <button class="btn-icon" title="Emoji">
+                        <i class="fas fa-smile"></i>
+                    </button>
+                    <button class="btn-icon" title="Anexar">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <div class="input-area">
+                        <input type="text" placeholder="Digite uma mensagem" @bind="newMessage" 
+                               @onkeypress="HandleKeyPress" @onfocus="HandleInputFocus" @onblur="HandleInputBlur" />
+                    </div>
+                    <button class="btn-send" @onclick="SendMessage" disabled="@(string.IsNullOrWhiteSpace(newMessage))">
+                        @if (string.IsNullOrWhiteSpace(newMessage))
+                        {
+                            <i class="fas fa-microphone"></i>
+                        }
+                        else
+                        {
+                            <i class="fas fa-paper-plane"></i>
+                        }
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- New Chat Modal -->
+    @if (showNewChatModal)
+    {
+        <div class="modal-overlay" @onclick="CloseNewChatModal">
+            <div class="modal-content" @onclick:stopPropagation="true">
+                <div class="modal-header">
+                    <h3>Nova Conversa</h3>
+                    <button class="btn-close" @onclick="CloseNewChatModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="search-users">
+                        <input type="text" placeholder="Buscar usuários..." @bind="userSearchTerm" @oninput="SearchUsers" />
+                    </div>
+                    @if (searchResults.Any())
+                    {
+                        <div class="users-list">
+                            @foreach (var user in searchResults)
+                            {
+                                <div class="user-item" @onclick="() => StartChatWithUser(user)">
+                                    <div class="user-avatar">
+                                        @if (!string.IsNullOrEmpty(user.ProfilePicture))
+                                        {
+                                            <img src="@user.ProfilePicture" alt="@user.Name" />
+                                        }
+                                        else
+                                        {
+                                            <div class="avatar-placeholder">
+                                                @user.Name.Substring(0, 1).ToUpper()
+                                            </div>
+                                        }
+                                        @if (user.IsOnline)
+                                        {
+                                            <div class="online-indicator"></div>
+                                        }
+                                    </div>
+                                    <div class="user-info">
+                                        <h5>@user.Name</h5>
+                                        <p>@@@user.Username</p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else if (!string.IsNullOrEmpty(userSearchTerm))
+                    {
+                        <div class="no-results">
+                            <p>Nenhum usuário encontrado</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    private UserDto? currentUser;
+    private int? currentUserId; // Para detectar mudanças de usuário
+    private List<ChatDto> chats = new();
+    private ChatDto? selectedChat;
+    private List<MessageDto> messages = new();
+    private string newMessage = string.Empty;
+    private string searchTerm = string.Empty;
+    private string userSearchTerm = string.Empty;
+    private List<UserDto> searchResults = new();
+    private bool showNewChatModal = false;
+    private List<string> typingUsers = new();
+    
+    private HubConnection? hubConnection;
+    private ElementReference messagesContainer;
+    private System.Threading.Timer? typingTimer;
+    private bool showChatMenu = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var httpContext = HttpContextAccessor.HttpContext;
+        
+        if (httpContext?.User?.Identity?.IsAuthenticated != true)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+        
+        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var userId))
+        {
+            if (currentUserId.HasValue && currentUserId.Value != userId)
+            {
+                await CleanupState();
+            }
+            
+            if (currentUser == null || currentUserId != userId)
+            {
+                selectedChat = null;
+                messages.Clear();
+                chats.Clear();
+                typingUsers.Clear();
+                searchResults.Clear();
+                currentUser = null;
+                currentUserId = null;
+            }
+
+            currentUser = await UserService.GetUserByIdAsync(userId);
+            currentUserId = userId;
+            
+            if (currentUser != null)
+            {
+                await LoadChats();
+                await InitializeSignalR();
+            }
+        }
+
+        if (currentUser == null)
+        {
+            Navigation.NavigateTo("/login");
+        }
+    }
+
+    private async Task CleanupState()
+    {
+        try
+        {
+            if (selectedChat != null && hubConnection != null)
+            {
+                try
+                {
+                    await hubConnection.InvokeAsync("LeaveChat", selectedChat.Id);
+                }
+                catch
+                {
+                    // Ignore leave chat errors
+                }
+            }
+
+            if (hubConnection is not null)
+            {
+                try
+                {
+                    await hubConnection.DisposeAsync();
+                    hubConnection = null;
+                }
+                catch
+                {
+                    // Ignore dispose errors
+                }
+            }
+        }
+        catch
+        {
+            // Ignore cleanup errors
+        }
+        
+        selectedChat = null;
+        messages.Clear();
+        chats.Clear();
+        typingUsers.Clear();
+        searchResults.Clear();
+        currentUser = null;
+        currentUserId = null;
+    }
+
+    private async Task InitializeSignalR()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/chathub"))
+            .Build();
+
+        hubConnection.On<MessageDto>("ReceiveMessage", async (message) =>
+        {
+            if (selectedChat?.Id == message.ChatId)
+            {
+                messages.Add(message);
+                await InvokeAsync(StateHasChanged);
+                await ScrollToBottom();
+            }
+            
+            await LoadChats();
+        });
+
+        hubConnection.On<TypingIndicatorDto>("UserTyping", async (typingInfo) =>
+        {
+            if (selectedChat?.Id == typingInfo.ChatId && typingInfo.UserId != currentUser?.Id)
+            {
+                if (typingInfo.IsTyping)
+                {
+                    if (!typingUsers.Contains(typingInfo.UserName))
+                    {
+                        typingUsers.Add(typingInfo.UserName);
+                    }
+                }
+                else
+                {
+                    typingUsers.Remove(typingInfo.UserName);
+                }
+                await InvokeAsync(StateHasChanged);
+            }
+        });
+
+        hubConnection.On<object>("UserOnlineStatusChanged", async (statusInfo) =>
+        {
+            await LoadChats();
+            await InvokeAsync(StateHasChanged);
+        });
+
+        hubConnection.On<ChatDto>("ChatUpdated", async (updatedChat) =>
+        {
+            await LoadChats();
+            await InvokeAsync(StateHasChanged);
+        });
+
+        hubConnection.On<object>("MessagesRead", async (readInfo) =>
+        {
+            await LoadChats();
+            await InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+        
+        if (currentUser != null)
+        {
+            await hubConnection.InvokeAsync("JoinUserGroup", currentUser.Id);
+        }
+    }
+
+    private async Task LoadChats()
+    {
+        if (currentUser != null)
+        {
+            chats = await ChatService.GetUserChatsAsync(currentUser.Id);
+        }
+    }
+
+    private async Task SelectChat(ChatDto chat)
+    {
+        if (selectedChat?.Id != chat.Id)
+        {
+            if (selectedChat != null && hubConnection != null)
+            {
+                await hubConnection.InvokeAsync("LeaveChat", selectedChat.Id);
+            }
+
+            selectedChat = chat;
+            typingUsers.Clear();
+            
+            if (currentUser != null)
+            {
+                messages = await ChatService.GetChatMessagesAsync(chat.Id, currentUser.Id);
+                
+                if (hubConnection != null)
+                {
+                    await hubConnection.InvokeAsync("JoinChat", chat.Id);
+                    
+                    // Marcar mensagens como lidas quando o chat for aberto
+                    if (chat.UnreadCount > 0)
+                    {
+                        await hubConnection.InvokeAsync("MarkMessagesAsRead", chat.Id);
+                    }
+                }
+            }
+            
+            await InvokeAsync(StateHasChanged);
+            await ScrollToBottom();
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(newMessage) || selectedChat == null || currentUser == null || hubConnection == null)
+            return;
+
+        var sendMessageDto = new SendMessageDto
+        {
+            Content = newMessage.Trim(),
+            ChatId = selectedChat.Id,
+            Type = MessageType.Text
+        };
+
+        await hubConnection.InvokeAsync("SendMessage", sendMessageDto);
+        newMessage = string.Empty;
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey)
+        {
+            await SendMessage();
+        }
+    }
+
+    private async Task HandleInputFocus()
+    {
+        if (selectedChat != null && hubConnection != null)
+        {
+            await hubConnection.InvokeAsync("StartTyping", selectedChat.Id);
+        }
+    }
+
+    private async Task HandleInputBlur()
+    {
+        if (selectedChat != null && hubConnection != null)
+        {
+            await hubConnection.InvokeAsync("StopTyping", selectedChat.Id);
+        }
+    }
+
+    private async Task ScrollToBottom()
+    {
+        await Task.Delay(50);
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("scrollToBottom", messagesContainer);
+        }
+        catch
+        {
+            // Ignore JS interop errors
+        }
+    }
+
+    private void HandleSearch(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? string.Empty;
+    }
+
+    private async Task SearchUsers(ChangeEventArgs e)
+    {
+        userSearchTerm = e.Value?.ToString() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(userSearchTerm))
+        {
+            searchResults.Clear();
+        }
+        else
+        {
+            searchResults = await UserService.SearchUsersAsync(userSearchTerm);
+            if (currentUser != null)
+            {
+                searchResults = searchResults.Where(u => u.Id != currentUser.Id).ToList();
+            }
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task StartChatWithUser(UserDto user)
+    {
+        if (currentUser != null)
+        {
+            var chat = await ChatService.GetOrCreatePrivateChatAsync(currentUser.Id, user.Id);
+            if (chat != null)
+            {
+                await LoadChats();
+                await SelectChat(chat);
+                CloseNewChatModal();
+            }
+        }
+    }
+
+    private void ShowNewChatModal()
+    {
+        showNewChatModal = true;
+        userSearchTerm = string.Empty;
+        searchResults.Clear();
+    }
+
+    private void CloseNewChatModal()
+    {
+        showNewChatModal = false;
+        userSearchTerm = string.Empty;
+        searchResults.Clear();
+    }
+
+    private async Task Logout()
+    {
+        try
+        {
+            await CleanupState();
+            Navigation.NavigateTo("/logout", forceLoad: true);
+        }
+        catch
+        {
+            Navigation.NavigateTo("/logout", forceLoad: true);
+        }
+    }
+
+    private static string FormatTime(DateTime dateTime)
+    {
+        var now = DateTime.UtcNow;
+        var diff = now - dateTime;
+
+        if (diff.TotalDays >= 1)
+        {
+            return dateTime.ToString("dd/MM/yyyy");
+        }
+        else
+        {
+            return dateTime.ToString("HH:mm");
+        }
+    }
+
+    private static string FormatLastSeen(DateTime? lastSeen)
+    {
+        if (!lastSeen.HasValue) return "desconhecido";
+        
+        var diff = DateTime.UtcNow - lastSeen.Value;
+        if (diff.TotalMinutes < 1) return "agora mesmo";
+        if (diff.TotalHours < 1) return $"{(int)diff.TotalMinutes} minutos atrás";
+        if (diff.TotalDays < 1) return $"{(int)diff.TotalHours} horas atrás";
+        return lastSeen.Value.ToString("dd/MM/yyyy");
+    }
+
+    private static string GetMessagePreview(MessageDto message)
+    {
+        return message.Type switch
+        {
+            MessageType.Image => "Imagem",
+            MessageType.File => "Arquivo",
+            MessageType.Audio => "Áudio",
+            MessageType.Video => "Vídeo",
+            _ => message.Content.Length > 30 ? message.Content.Substring(0, 30) + "..." : message.Content
+        };
+    }
+
+    private void GoToAddContact()
+    {
+        Navigation.NavigateTo("/add-contact");
+    }
+
+    private void ToggleChatMenu()
+    {
+        showChatMenu = !showChatMenu;
+    }
+
+    private void CloseChatMenuIfOpen()
+    {
+        if (showChatMenu)
+        {
+            showChatMenu = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteChat(int chatId)
+    {
+        try
+        {
+            if (currentUser != null)
+            {
+                var success = await ChatService.RemoveParticipantAsync(chatId, currentUser.Id, currentUser.Id);
+                
+                if (success)
+                {
+                    showChatMenu = false;
+                    selectedChat = null;
+                    messages.Clear();
+                    await LoadChats();
+                    StateHasChanged();
+                }
+                else
+                {
+                }
+            }
+        }
+        catch
+        {
+            // Ignore delete chat errors
+        }
+    }
+
+    private void ClearChatHistory(int chatId)
+    {
+        try
+        {
+            showChatMenu = false;
+        }
+        catch
+        {
+            // Ignore clear history errors
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        typingTimer?.Dispose();
+        if (hubConnection != null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}
+
+<style>
+.chat-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    min-width: 180px;
+    overflow: hidden;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    background: white;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.menu-item:hover {
+    background: #f5f5f5;
+}
+
+.menu-item.danger {
+    color: #dc3545;
+}
+
+.menu-item.danger:hover {
+    background: #fff5f5;
+}
+
+.menu-item i {
+    width: 16px;
+    text-align: center;
+}
+</style>

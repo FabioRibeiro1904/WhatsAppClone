@@ -1,0 +1,32 @@
+@page "/teste-botao"
+@rendermode InteractiveServer
+
+<h3>Teste de Interatividade</h3>
+
+<p>Contador: @counter</p>
+
+<button @onclick="IncrementCounter">
+    Clique aqui (+1)
+</button>
+
+<br /><br />
+
+<button @onclick="GoHome">
+    Voltar para Home
+</button>
+
+@code {
+    private int counter = 0;
+
+    private void IncrementCounter()
+    {
+        counter++;
+    }
+
+    private void GoHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+}
+
+@inject NavigationManager Navigation

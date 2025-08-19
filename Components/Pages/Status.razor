@@ -1,0 +1,68 @@
+@page "/status"
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Status Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 40px; 
+            background: #f0f8ff;
+        }
+        .status { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="status">
+        <h1>WhatsApp Clone - Status</h1>
+        <p><strong>Servidor:</strong> Online</p>
+        <p><strong>Blazor:</strong> Funcionando</p>
+        <p><strong>Data/Hora:</strong> @DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")</p>
+        <p><strong>Ambiente:</strong> Development</p>
+        
+        <hr>
+        
+        <h3>Links de Teste:</h3>
+        <ul>
+            <li><a href="/">Página Inicial</a></li>
+            <li><a href="/login">Login Principal</a></li>
+            <li><a href="/login-simple">Login Simples</a></li>
+            <li><a href="/register">Registro</a></li>
+            <li><a href="/chat">Chat (requer login)</a></li>
+            <li><a href="/debug">Debug</a></li>
+        </ul>
+        
+        <hr>
+        
+        <h3>Contas de Teste:</h3>
+        <table border="1" style="border-collapse: collapse; width: 100%;">
+            <tr style="background: #f5f5f5;">
+                <th style="padding: 8px;">Usuário</th>
+                <th style="padding: 8px;">Senha</th>
+                <th style="padding: 8px;">Papel</th>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">admin</td>
+                <td style="padding: 8px;">admin123</td>
+                <td style="padding: 8px;">Administrador</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">alice</td>
+                <td style="padding: 8px;">alice123</td>
+                <td style="padding: 8px;">Usuário</td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">bob</td>
+                <td style="padding: 8px;">bob123</td>
+                <td style="padding: 8px;">Usuário</td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

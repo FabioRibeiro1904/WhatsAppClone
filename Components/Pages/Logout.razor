@@ -1,0 +1,45 @@
+@page "/logout"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IUserService UserService
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var httpContext = HttpContextAccessor.HttpContext;
+            if (httpContext != null)
+            {
+                // Tentar obter o ID do usuário antes do logout
+                var userIdClaim = httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+                {
+                    // Atualizar status do usuário para offline
+                    await UserService.UpdateOnlineStatusAsync(userId, false);
+                }
+
+                // Fazer logout
+                await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            }
+        }
+        catch
+        {
+            // Ignorar erros de logout - sempre redirecionar para login
+        }
+        finally
+        {
+            // Sempre redirecionar para login
+            Navigation.NavigateTo("/login", forceLoad: true);
+        }
+    }
+}
+
+<div style="min-height: 100vh; background: #075e54; display: flex; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 2rem; border-radius: 12px; text-align: center;">
+        <h3>Saindo...</h3>
+        <p>Redirecionando para login...</p>
+    </div>
+</div>

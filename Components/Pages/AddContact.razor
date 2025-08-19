@@ -1,0 +1,148 @@
+@page "/add-contact"
+@inject NavigationManager Navigation
+@inject IUserService UserService
+@inject IChatService ChatService
+
+<div style="min-height: 100vh; background: #f0f2f5; padding: 20px;">
+    <div style="max-width: 800px; margin: 0 auto;">
+        <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="margin-bottom: 2rem;">
+                <h1 style="color: #333; margin-bottom: 0.5rem;">Adicionar Contato</h1>
+                <p style="color: #666; margin: 0;">Busque por username para adicionar um novo contato</p>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <div style="position: relative;">
+                    <input @bind="searchTerm" @onkeyup="SearchUsers" @onkeyup:preventDefault="false" 
+                           placeholder="Digite o username do usuário..." 
+                           style="width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; box-sizing: border-box;" />
+                    @if (isSearching)
+                    {
+                        <div style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">
+                            <span style="color: #666;">Buscando...</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div style="background: #f8d7da; color: #721c24; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
+                    @errorMessage
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(successMessage))
+            {
+                <div style="background: #d1e7dd; color: #0f5132; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
+                    @successMessage
+                </div>
+            }
+
+            @if (searchResults.Any())
+            {
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="color: #333; margin-bottom: 1rem;">Resultados da Busca</h3>
+                    @foreach (var user in searchResults)
+                    {
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 0.5rem; background: #f8f9fa;">
+                            <div style="display: flex; align-items: center;">
+                                <div style="width: 50px; height: 50px; border-radius: 50%; background: #128C7E; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 1rem;">
+                                    @user.Name[0].ToString().ToUpper()
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: #333;">@user.Name</div>
+                                    <div style="color: #666; font-size: 0.875rem;">@@@user.Username</div>
+                                    <div style="color: #888; font-size: 0.75rem;">@user.Status</div>
+                                </div>
+                            </div>
+                            <button @onclick="() => StartChat(user.Username)" 
+                                    style="background: #128C7E; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">
+                                Conversar
+                            </button>
+                        </div>
+                    }
+                </div>
+            }
+            else if (!string.IsNullOrEmpty(searchTerm) && !isSearching)
+            {
+                <div style="text-align: center; padding: 2rem; color: #666;">
+                    <p>Nenhum usuário encontrado com o username "@searchTerm"</p>
+                    <p style="font-size: 0.875rem;">Verifique se o username está correto</p>
+                </div>
+            }
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button @onclick="GoBack" style="background: transparent; color: #666; border: 2px solid #e0e0e0; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">
+                    Voltar ao Chat
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string searchTerm = string.Empty;
+    private List<UserDto> searchResults = new();
+    private bool isSearching = false;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+
+    private async Task SearchUsers()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            searchResults.Clear();
+            return;
+        }
+
+        if (searchTerm.Length < 2)
+            return;
+
+        isSearching = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            await Task.Delay(300);
+            searchResults = await UserService.SearchUsersAsync(searchTerm);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Erro ao buscar usuários. Tente novamente.";
+        }
+        finally
+        {
+            isSearching = false;
+        }
+    }
+
+    private async Task StartChat(string username)
+    {
+        try
+        {
+            errorMessage = string.Empty;
+            successMessage = string.Empty;
+
+            var targetUser = await UserService.GetUserByUsernameAsync(username);
+            if (targetUser == null)
+            {
+                errorMessage = "Usuário não encontrado.";
+                return;
+            }
+
+            successMessage = $"Iniciando conversa com {targetUser.Name}...";
+            await Task.Delay(1000);
+            Navigation.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Erro ao iniciar conversa. Tente novamente.";
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

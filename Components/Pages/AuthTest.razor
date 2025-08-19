@@ -1,0 +1,62 @@
+@page "/auth-test"
+@using System.Security.Claims
+@inject IHttpContextAccessor HttpContextAccessor
+@rendermode InteractiveServer
+
+<div style="padding: 2rem; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    <h1>Teste de Autenticação</h1>
+    
+    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+        <h3>Status de Autenticação</h3>
+        <p><strong>Está autenticado:</strong> @(httpContext?.User?.Identity?.IsAuthenticated == true ? "✅ SIM" : "❌ NÃO")</p>
+        <p><strong>Nome do usuário:</strong> @(httpContext?.User?.Identity?.Name ?? "Não disponível")</p>
+        <p><strong>ID do usuário:</strong> @(httpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "Não disponível")</p>
+        <p><strong>Nome completo:</strong> @(httpContext?.User?.FindFirst("FullName")?.Value ?? "Não disponível")</p>
+    </div>
+
+    <div style="background: #e3f2fd; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+        <h3>Claims do Usuário</h3>
+        @if (httpContext?.User?.Claims?.Any() == true)
+        {
+            <ul>
+                @foreach (var claim in httpContext.User.Claims)
+                {
+                    <li><strong>@claim.Type:</strong> @claim.Value</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>Nenhuma claim encontrada</p>
+        }
+    </div>
+
+    <div style="background: #fff3e0; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+        <h3>Informações do HttpContext</h3>
+        <p><strong>HttpContext disponível:</strong> @(httpContext != null ? "✅ SIM" : "❌ NÃO")</p>
+        <p><strong>User disponível:</strong> @(httpContext?.User != null ? "✅ SIM" : "❌ NÃO")</p>
+        <p><strong>Identity disponível:</strong> @(httpContext?.User?.Identity != null ? "✅ SIM" : "❌ NÃO")</p>
+        <p><strong>Identity Type:</strong> @(httpContext?.User?.Identity?.AuthenticationType ?? "Não disponível")</p>
+    </div>
+
+    <div style="margin-top: 2rem;">
+        <button onclick="location.href='/login'" style="background: #25d366; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; margin-right: 1rem;">
+            Ir para Login
+        </button>
+        <button onclick="location.href='/chat'" style="background: #075e54; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer; margin-right: 1rem;">
+            Ir para Chat
+        </button>
+        <button onclick="location.href='/logout'" style="background: #dc3545; color: white; border: none; padding: 1rem 2rem; border-radius: 8px; cursor: pointer;">
+            Logout
+        </button>
+    </div>
+</div>
+
+@code {
+    private Microsoft.AspNetCore.Http.HttpContext? httpContext;
+
+    protected override void OnInitialized()
+    {
+        httpContext = HttpContextAccessor.HttpContext;
+    }
+}

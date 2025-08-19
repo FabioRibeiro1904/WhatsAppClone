@@ -1,0 +1,16 @@
+@page "/basic"
+
+<h1>Página Básica</h1>
+<p>Esta é uma página completamente básica para teste.</p>
+<p>Se você está vendo isto, o Blazor Server está funcionando.</p>
+
+<button @onclick="UpdateCounter">Clique aqui: @counter</button>
+
+@code {
+    private int counter = 0;
+
+    private void UpdateCounter()
+    {
+        counter++;
+    }
+}

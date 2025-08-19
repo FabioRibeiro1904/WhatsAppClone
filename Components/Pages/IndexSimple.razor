@@ -1,0 +1,47 @@
+@page "/index-simple"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+<h3>Teste Simples</h3>
+
+<p>Status: @status</p>
+
+<button @onclick="TestButton">
+    Testar Botão
+</button>
+
+<br /><br />
+
+<button @onclick="GoToLogin">
+    Ir para Login
+</button>
+
+<br /><br />
+
+<button @onclick="GoToRegister">
+    Ir para Registro
+</button>
+
+@code {
+    private string status = "Aguardando...";
+
+    private void TestButton()
+    {
+        status = "Botão funcionou! " + DateTime.Now.ToString("HH:mm:ss");
+        StateHasChanged();
+    }
+
+    private void GoToLogin()
+    {
+        status = "Navegando para login...";
+        StateHasChanged();
+        Navigation.NavigateTo("/login-whatsapp");
+    }
+
+    private void GoToRegister()
+    {
+        status = "Navegando para registro...";
+        StateHasChanged();
+        Navigation.NavigateTo("/register");
+    }
+}

@@ -1,0 +1,162 @@
+@page "/login-whatsapp"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.AspNetCore.Components.Forms
+@using WhatsAppClone.DTOs
+@inject IUserService UserService
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<!-- Tela de Login do WhatsApp -->
+<div style="min-height: 100vh; background: #075e54; display: flex; align-items: center; justify-content: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    <div style="background: white; width: 100%; max-width: 400px; margin: 20px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+        
+        <!-- Header -->
+        <div style="background: #075e54; padding: 40px 30px; text-align: center; color: white; position: relative;">
+            <button @onclick="GoBack" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: white; font-size: 20px; cursor: pointer;">
+                ←
+            </button>
+            <div style="font-size: 60px; margin-bottom: 10px;">�</div>
+            <h1 style="margin: 0; font-size: 24px; font-weight: normal;">WhatsApp</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.8; font-size: 14px;">Faça login para continuar</p>
+        </div>
+
+        <!-- Formulário -->
+        <div style="padding: 30px;">
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div style="background: #ffebee; color: #c62828; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; border-left: 4px solid #c62828;">
+                    @errorMessage
+                </div>
+            }
+
+            <form @onsubmit="HandleLogin" @onsubmit:preventDefault="true">
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; color: #666; font-size: 14px; margin-bottom: 8px;">Usuário</label>
+                    <input @bind="loginModel.Username" 
+                           style="width: 100%; padding: 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box;" 
+                           placeholder="Digite seu usuário" />
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; color: #666; font-size: 14px; margin-bottom: 8px;">Senha</label>
+                    <input @bind="loginModel.Password" type="password" 
+                           style="width: 100%; padding: 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box;" 
+                           placeholder="Digite sua senha" />
+                </div>
+
+                <button type="submit" disabled="@isLoading" 
+                        style="width: 100%; background: #25d366; color: white; border: none; padding: 15px; border-radius: 25px; font-size: 16px; cursor: pointer; transition: background 0.3s; font-weight: 500;">
+                    @if (isLoading)
+                    {
+                        <span>Entrando...</span>
+                    }
+                    else
+                    {
+                        <span>Entrar</span>
+                    }
+                </button>
+            </form>
+
+            <!-- Link para criar conta -->
+            <div style="text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
+                <p style="color: #666; font-size: 14px; margin-bottom: 10px;">Não tem uma conta?</p>
+                <button @onclick="GoToRegister" 
+                        style="background: transparent; color: #25d366; border: none; font-size: 14px; cursor: pointer; text-decoration: underline;">
+                    Criar conta
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginDto loginModel { get; set; } = new();
+    
+    private string errorMessage = string.Empty;
+    private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var context = HttpContextAccessor.HttpContext;
+        if (context?.User?.Identity?.IsAuthenticated == true)
+        {
+            Navigation.NavigateTo("/chat");
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+            StateHasChanged();
+
+            var result = await JSRuntime.InvokeAsync<bool>("loginUser", loginModel.Username, loginModel.Password);
+            
+            if (result)
+            {
+                Navigation.NavigateTo("/chat", forceLoad: true);
+            }
+            else
+            {
+                errorMessage = "Usuário ou senha inválidos";
+            }
+        }
+        catch
+        {
+            errorMessage = "Erro ao fazer login. Tente novamente.";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private void GoToRegister()
+    {
+        Navigation.NavigateTo("/register");
+    }
+}
+
+<script>
+    window.loginUser = async function (username, password) {
+        try {
+            console.log('JavaScript loginUser chamado com:', username, password);
+            
+            const response = await fetch('/api/AuthApi/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    Username: username,
+                    Password: password
+                })
+            });
+
+            console.log('Response status:', response.status);
+            
+            if (response.ok) {
+                console.log('Login bem-sucedido via API!');
+                return true;
+            } else {
+                console.log('Login falhou:', response.statusText);
+                return false;
+            }
+        } catch (error) {
+            console.error('Erro na chamada da API:', error);
+            return false;
+        }
+    };
+</script>

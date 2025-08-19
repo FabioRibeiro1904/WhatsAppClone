@@ -1,0 +1,138 @@
+@page "/login-simple"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@inject IUserService UserService
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
+@rendermode InteractiveServer
+
+<PageTitle>Login - WhatsApp Clone</PageTitle>
+
+<div style="min-height: 100vh; background: #075e54; display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; border-radius: 12px; padding: 2rem; width: 100%; max-width: 400px;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h1 style="color: #25d366; font-size: 3rem;">W</h1>
+            <h2>WhatsApp Clone</h2>
+            <p>Faça login para continuar</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div style="background: #ffebee; color: #c62828; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                @errorMessage
+            </div>
+        }
+
+        <div style="margin-bottom: 1rem;">
+            <label>Usuário:</label>
+            <input @bind="username" type="text" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;" placeholder="Digite seu usuário" />
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+            <label>Senha:</label>
+            <input @bind="password" type="password" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;" placeholder="Digite sua senha" />
+        </div>
+
+        <button @onclick="HandleLogin" style="width: 100%; background: #25d366; color: white; border: none; padding: 1rem; border-radius: 4px; cursor: pointer;" disabled="@isLoggingIn">
+            @if (isLoggingIn)
+            {
+                <span>Entrando...</span>
+            }
+            else
+            {
+                <span>Entrar</span>
+            }
+        </button>
+
+        <div style="margin-top: 2rem; text-align: center;">
+            <h4>Contas de Demonstração:</h4>
+            <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem;">
+                <button @onclick='() => LoginWithDemo("admin", "admin123")' style="background: #f0f0f0; border: 1px solid #ddd; padding: 0.5rem; border-radius: 4px; cursor: pointer;">
+                    Admin
+                </button>
+                <button @onclick='() => LoginWithDemo("alice", "alice123")' style="background: #f0f0f0; border: 1px solid #ddd; padding: 0.5rem; border-radius: 4px; cursor: pointer;">
+                    Alice
+                </button>
+                <button @onclick='() => LoginWithDemo("bob", "bob123")' style="background: #f0f0f0; border: 1px solid #ddd; padding: 0.5rem; border-radius: 4px; cursor: pointer;">
+                    Bob
+                </button>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 1rem;">
+            <p>Não tem uma conta? <a href="/register" style="color: #25d366;">Registre-se aqui</a></p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string username = string.Empty;
+    private string password = string.Empty;
+    private string errorMessage = string.Empty;
+    private bool isLoggingIn = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var httpContext = HttpContextAccessor.HttpContext;
+        if (httpContext?.User?.Identity?.IsAuthenticated == true)
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        isLoggingIn = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var user = await UserService.LoginAsync(username, password);
+            if (user != null)
+            {
+                await SignInUser(user);
+                Navigation.NavigateTo("/chat");
+            }
+            else
+            {
+                errorMessage = "Usuário ou senha incorretos.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Erro ao fazer login. Tente novamente.";
+        }
+        finally
+        {
+            isLoggingIn = false;
+        }
+    }
+
+    private async Task LoginWithDemo(string demoUsername, string demoPassword)
+    {
+        username = demoUsername;
+        password = demoPassword;
+        await HandleLogin();
+    }
+
+    private async Task SignInUser(UserDto user)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim("FullName", user.Name)
+        };
+
+        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+        var httpContext = HttpContextAccessor.HttpContext;
+        if (httpContext != null)
+        {
+            await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+        }
+    }
+}

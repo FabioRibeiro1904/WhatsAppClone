@@ -1,0 +1,105 @@
+.navbar-toggler[b-gf8s4ktb3l] {
+    appearance: none;
+    cursor: pointer;
+    width: 3.5rem;
+    height: 2.5rem;
+    color: white;
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: url("data:image/svg+xml,%3csvg xmlns='http:
+}
+
+.navbar-toggler:checked[b-gf8s4ktb3l] {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.top-row[b-gf8s4ktb3l] {
+    min-height: 3.5rem;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.navbar-brand[b-gf8s4ktb3l] {
+    font-size: 1.1rem;
+}
+
+.bi[b-gf8s4ktb3l] {
+    display: inline-block;
+    position: relative;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.75rem;
+    top: -1px;
+    background-size: cover;
+}
+
+.bi-house-door-fill-nav-menu[b-gf8s4ktb3l] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http:
+}
+
+.bi-plus-square-fill-nav-menu[b-gf8s4ktb3l] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http:
+}
+
+.bi-list-nested-nav-menu[b-gf8s4ktb3l] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http:
+}
+
+.nav-item[b-gf8s4ktb3l] {
+    font-size: 0.9rem;
+    padding-bottom: 0.5rem;
+}
+
+    .nav-item:first-of-type[b-gf8s4ktb3l] {
+        padding-top: 1rem;
+    }
+
+    .nav-item:last-of-type[b-gf8s4ktb3l] {
+        padding-bottom: 1rem;
+    }
+
+    .nav-item[b-gf8s4ktb3l]  .nav-link {
+        color: #d7d7d7;
+        background: none;
+        border: none;
+        border-radius: 4px;
+        height: 3rem;
+        display: flex;
+        align-items: center;
+        line-height: 3rem;
+        width: 100%;
+    }
+
+.nav-item[b-gf8s4ktb3l]  a.active {
+    background-color: rgba(255,255,255,0.37);
+    color: white;
+}
+
+.nav-item[b-gf8s4ktb3l]  .nav-link:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.nav-scrollable[b-gf8s4ktb3l] {
+    display: none;
+}
+
+.navbar-toggler:checked ~ .nav-scrollable[b-gf8s4ktb3l] {
+    display: block;
+}
+
+@media (min-width: 641px) {
+    .navbar-toggler[b-gf8s4ktb3l] {
+        display: none;
+    }
+
+    .nav-scrollable[b-gf8s4ktb3l] {
+        
+        display: block;
+
+        
+        height: calc(100vh - 3.5rem);
+        overflow-y: auto;
+    }
+}
