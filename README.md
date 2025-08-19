@@ -1,261 +1,405 @@
-# Chat em Tempo Real - Blazor + SignalR
+# Sistema de Chat em Tempo Real - Blazor Server + SignalR
 
-Aplicação de chat em tempo real feita com Blazor Server e SignalR. Simula funcionalidades do WhatsApp com múltiplas salas e usuários online.
+Uma aplicação completa de mensagens instantâneas desenvolvida com Blazor Server e SignalR, oferecendo uma experiência de comunicação moderna e intuitiva inspirada nas principais plataformas de chat do mercado.
 
-## O que é este projeto
+## Visão Geral do Projeto
 
-Este projeto demonstra como criar aplicações web interativas com:
-- Interface de chat similar ao WhatsApp
-- Comunicação em tempo real entre usuários
-- Múltiplas salas de chat
-- Lista de usuários online
-- Envio de mensagens instantâneo
-- Design moderno e responsivo
+Este projeto representa uma implementação robusta de um sistema de chat em tempo real, demonstrando as capacidades avançadas das tecnologias Microsoft para desenvolvimento web. A aplicação oferece:
 
-## Tecnologias usadas
+- **Interface Intuitiva**: Design responsivo e moderno que se adapta a diferentes dispositivos
+- **Comunicação Instantânea**: Mensagens entregues em tempo real sem necessidade de recarregar a página
+- **Arquitetura Escalável**: Estrutura preparada para suportar múltiplos usuários simultâneos
+- **Salas Temáticas**: Diferentes ambientes de conversa para organizar discussões
+- **Gestão de Presença**: Sistema de usuários online com atualizações automáticas
+- **Persistência de Dados**: Histórico completo de conversas armazenado em banco de dados
 
-- **Blazor Server** - Framework para aplicações web interativas com C#
-- **SignalR** - Para comunicação em tempo real
-- **Bootstrap 5** - Framework CSS para interface moderna
-- **Entity Framework Core** - Para salvar mensagens e usuários
-- **SQLite** - Banco de dados
+## Stack Tecnológico
 
-## Como usar
+A aplicação foi construída utilizando tecnologias modernas e consolidadas do ecossistema .NET:
 
-### Executar o projeto
+- **Blazor Server**: Framework Microsoft para desenvolvimento de aplicações web interativas usando C# no frontend
+- **SignalR**: Biblioteca para comunicação em tempo real bidirecional entre cliente e servidor
+- **Bootstrap 5**: Framework CSS responsivo para criação de interfaces modernas e acessíveis
+- **Entity Framework Core**: ORM para mapeamento objeto-relacional e gerenciamento de dados
+- **SQLite**: Banco de dados leve e eficiente para persistência local
+- **ASP.NET Core**: Plataforma robusta para desenvolvimento de aplicações web
 
-```bash
-cd WhatsAppClone
-dotnet restore
-dotnet run
-```
+## Guia de Instalação e Execução
 
-### Acessar
+### Pré-requisitos do Sistema
 
-- Aplicação: https://localhost:5031
-- Chat: https://localhost:5031/chat
+Antes de executar a aplicação, certifique-se de ter instalado:
+- .NET 9 SDK ou superior
+- Ambiente de desenvolvimento (Visual Studio, VS Code ou JetBrains Rider)
+- Git para controle de versão
 
-### Teste o chat
+### Processo de Instalação
 
-1. Abra a aplicação em duas abas do navegador
-2. Faça login com usuários diferentes
-3. Envie mensagens e veja atualizando em tempo real
-4. Teste diferentes salas de chat
+1. **Clone o repositório do projeto:**
+   ```bash
+   git clone [URL_DO_REPOSITÓRIO]
+   cd 05-blazor-signalr-chat
+   ```
 
-## O que a aplicação faz
+2. **Restaure as dependências:**
+   ```bash
+   cd WhatsAppClone
+   dotnet restore
+   ```
+
+3. **Execute a aplicação:**
+   ```bash
+   dotnet run
+   ```
+
+4. **Acesse a aplicação:**
+   - URL principal: https://localhost:5031
+   - Interface de chat: https://localhost:5031/chat
+   - Página de status: https://localhost:5031/status
+
+## Funcionalidades Principais
+
+### Interface de Usuário
 
 **Página Inicial:**
-- Apresentação do projeto
-- Demonstração das tecnologias
-- Preview animado do chat
+- Apresentação completa do projeto com demonstrações visuais
+- Showcase das tecnologias utilizadas
+- Preview interativo das funcionalidades do chat
+- Navegação intuitiva para diferentes seções da aplicação
 
-**Sistema de Chat:**
-- Login com nome de usuário
-- Múltiplas salas (Geral, Tecnologia, Random)
-- Lista de usuários online
-- Envio de mensagens em tempo real
-- Histórico de mensagens salvo
+**Sistema de Autenticação:**
+- Processo de login simplificado baseado em nome de usuário
+- Validação de dados de entrada
+- Redirecionamento automático para área logada
+- Gestão de sessões de usuário
 
-**Funcionalidades em Tempo Real:**
-- Mensagens aparecem instantaneamente
-- Notificação quando alguém entra/sai
-- Lista de usuários atualizada automaticamente
-- Indicadores visuais de atividade
+**Interface de Chat:**
+- Design responsivo inspirado em aplicações modernas de mensagens
+- Múltiplas salas temáticas (Geral, Tecnologia, Discussões Livres)
+- Lista dinâmica de usuários online por sala
+- Área de composição de mensagens com envio em tempo real
+- Histórico completo de conversas com scroll infinito
 
-## Estrutura do código
+### Funcionalidades em Tempo Real
+
+A aplicação oferece experiência completamente síncrona através do SignalR:
+
+- **Entrega Instantânea**: Mensagens aparecem imediatamente para todos os usuários conectados
+- **Notificações de Presença**: Alertas automáticos quando usuários entram ou saem das salas
+- **Atualizações Dinâmicas**: Lista de usuários online atualizada automaticamente
+- **Indicadores Visuais**: Feedback visual para ações como digitação e status de conexão
+- **Sincronização Cross-Tab**: Atualizações refletidas em múltiplas abas do mesmo usuário
+
+## Arquitetura e Estrutura do Código
+
+O projeto segue princípios de arquitetura limpa e separação de responsabilidades:
 
 ```
 WhatsAppClone/
 ├── Components/
-│   ├── Layout/          # Layout da aplicação
-│   └── Pages/
-│       ├── Home.razor   # Página inicial
-│       └── Chat.razor   # Interface do chat
-├── Hubs/               # SignalR Hubs
-├── Models/             # Classes de dados
-├── Data/               # Configuração do banco
-└── Services/           # Lógica de negócio
+│   ├── Layout/              # Componentes de layout e estrutura
+│   │   ├── MainLayout.razor # Layout principal da aplicação
+│   │   └── NavMenu.razor    # Menu de navegação
+│   └── Pages/               # Páginas e componentes principais
+│       ├── Home.razor       # Página inicial com apresentação
+│       ├── Login.razor      # Interface de autenticação
+│       ├── Register.razor   # Cadastro de novos usuários
+│       └── Chat.razor       # Interface principal do chat
+├── Controllers/             # Controllers da API REST
+│   ├── AuthApiController.cs # Endpoints de autenticação
+│   └── MobileApiController.cs # API para aplicações móveis
+├── Data/                    # Camada de acesso a dados
+│   └── WhatsAppDbContext.cs # Contexto do Entity Framework
+├── DTOs/                    # Objetos de transferência de dados
+│   ├── ChatDtos.cs         # DTOs relacionados ao chat
+│   └── UserDtos.cs         # DTOs de usuários
+├── Hubs/                    # SignalR Hubs para comunicação real-time
+│   └── ChatHub.cs          # Hub principal do chat
+├── Models/                  # Modelos de domínio
+│   ├── Chat.cs             # Modelo de salas de chat
+│   ├── Message.cs          # Modelo de mensagens
+│   ├── User.cs             # Modelo de usuários
+│   └── ChatParticipant.cs  # Relacionamento usuário-chat
+├── Services/                # Camada de serviços de negócio
+│   ├── ChatService.cs      # Lógica de negócio do chat
+│   └── UserService.cs      # Gestão de usuários
+└── wwwroot/                # Recursos estáticos
+    ├── css/                # Estilos customizados
+    ├── js/                 # Scripts JavaScript
+    └── lib/                # Bibliotecas de terceiros
 ```
 
-## Como funciona o SignalR
+## Implementação do SignalR
 
-### Hub de Chat
+### Arquitetura de Comunicação em Tempo Real
+
+O SignalR funciona como ponte entre o servidor e o cliente, estabelecendo uma conexão persistente que permite comunicação bidirecional instantânea.
+
+### Hub de Chat - Servidor
 ```csharp
 public class ChatHub : Hub
 {
-    // Usuário entra na sala
-    public async Task JoinRoom(string roomName)
-    
-    // Enviar mensagem para a sala
-    public async Task SendMessage(string message, string roomName)
-    
-    // Usuário sai da sala
-    public async Task LeaveRoom(string roomName)
+    private readonly IUserService _userService;
+    private readonly IChatService _chatService;
+
+    // Usuário entra em uma sala específica
+    public async Task JoinRoom(string roomName, string userName)
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, roomName);
+        await Clients.Group(roomName).SendAsync("UserJoined", userName);
+    }
+
+    // Envio de mensagem para todos na sala
+    public async Task SendMessageToRoom(string message, string roomName, string userName)
+    {
+        var messageEntity = await _chatService.SaveMessageAsync(message, userName, roomName);
+        await Clients.Group(roomName).SendAsync("ReceiveMessage", userName, message, messageEntity.Timestamp);
+    }
+
+    // Usuário deixa a sala
+    public async Task LeaveRoom(string roomName, string userName)
+    {
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomName);
+        await Clients.Group(roomName).SendAsync("UserLeft", userName);
+    }
+
+    // Notificação de digitação
+    public async Task NotifyTyping(string roomName, string userName, bool isTyping)
+    {
+        await Clients.GroupExcept(roomName, Context.ConnectionId)
+                    .SendAsync("UserTyping", userName, isTyping);
+    }
 }
 ```
 
-### Frontend Blazor
+### Cliente Blazor - Frontend
 ```csharp
-// Conectar ao hub
-hubConnection = new HubConnectionBuilder()
-    .WithUrl("/chatHub")
-    .Build();
+@code {
+    private HubConnection? hubConnection;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        // Estabelecer conexão com o hub
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/chatHub"))
+            .WithAutomaticReconnect()
+            .Build();
 
-// Receber mensagens
-hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
-{
-    // Atualizar interface
-});
-```
+        // Configurar listeners para eventos do servidor
+        hubConnection.On<string, string, DateTime>("ReceiveMessage", OnMessageReceived);
+        hubConnection.On<string>("UserJoined", OnUserJoined);
+        hubConnection.On<string>("UserLeft", OnUserLeft);
+        hubConnection.On<string, bool>("UserTyping", OnUserTyping);
 
-## Funcionalidades implementadas
+        await hubConnection.StartAsync();
+    }
 
-**Chat Multi-Salas:**
-- Sala Geral (para todos)
-- Sala Tecnologia (discussões técnicas)
-- Sala Random (conversas diversas)
+    private async Task OnMessageReceived(string user, string message, DateTime timestamp)
+    {
+        // Atualizar interface com nova mensagem
+        await InvokeAsync(StateHasChanged);
+    }
+}
 
-**Gerenciamento de Usuários:**
-- Login simples com nome
-- Lista de usuários online por sala
-- Notificações de entrada/saída
+## Recursos Implementados
 
-**Interface Responsiva:**
-- Funciona bem no celular
-- Design similar ao WhatsApp
-- Cores e layout modernos
+### Sistema de Chat Multi-Salas
 
-**Tempo Real:**
-- Mensagens instantâneas
-- Atualizações automáticas
-- Sincronização entre abas
+**Salas Disponíveis:**
+- **Sala Geral**: Ambiente principal para conversas abertas e discussões gerais
+- **Sala Tecnologia**: Espaço dedicado para discussões técnicas, programação e inovação
+- **Sala Discussões Livres**: Ambiente descontraído para conversas variadas e temas diversos
 
-## Exemplos de uso
+**Recursos por Sala:**
+- Gestão independente de usuários online
+- Histórico personalizado de mensagens
+- Configurações específicas de moderação
+- Notificações contextualizadas
 
-### Entrar no chat
-1. Acesse /chat
-2. Digite seu nome
-3. Escolha uma sala
-4. Comece a conversar
+### Gestão Avançada de Usuários
 
-### Testar tempo real
-1. Abra duas abas
-2. Entre com nomes diferentes
-3. Envie mensagens em uma aba
-4. Veja aparecer na outra instantaneamente
+**Sistema de Autenticação:**
+- Processo de login simplificado baseado em nome de usuário
+- Validação de dados de entrada em tempo real
+- Prevenção de nomes duplicados na mesma sessão
+- Gestão segura de sessões de usuário
 
-## Observações
+**Controle de Presença:**
+- Lista dinâmica de usuários online por sala
+- Notificações automáticas de entrada e saída
+- Indicadores visuais de status de conexão
+- Gerenciamento de desconexões inesperadas
 
-- Mensagens são salvas no banco de dados
-- Usuários online são gerenciados em memória
-- Interface inspirada no WhatsApp
-- Funciona melhor com múltiplos usuários
-- Demonstração das capacidades do Blazor
+### Interface e Experiência do Usuário
 
-## Próximos passos
+**Design Responsivo:**
+- Adaptação automática para dispositivos móveis e desktop
+- Layout otimizado para diferentes resoluções de tela
+- Navegação intuitiva em interfaces touch
+- Compatibilidade cross-browser
 
-Para um chat real, adicionaria:
-- Autenticação com login/senha
-- Mensagens privadas entre usuários
-- Upload de imagens e arquivos
-- Emojis e reações
-- Notificações push
-- Criptografia das mensagens
-- Grupos privados
-- Status online/offline/ausente
-├── wwwroot/
-│   ├── app.css                    # Estilos personalizados
-│   └── favicon.png                # Ícone da aplicação
-├── Program.cs                     # Configuração da aplicação
-└── BlazorChatSimple.csproj       # Arquivo de projeto
-```
+**Experiência em Tempo Real:**
+- Entrega instantânea de mensagens sem necessidade de refresh
+- Atualizações automáticas da interface
+- Feedback visual para ações do usuário
+- Sincronização perfeita entre múltiplas abas
 
-## Como Executar
+## Guia de Utilização
 
-### Pré-requisitos
-- .NET 9 SDK
-- IDE compatível (Visual Studio, VS Code, Rider)
+### Primeiros Passos
 
-### Executar a Aplicação
-1. Clone o repositório
-2. Navegue até a pasta do projeto:
-   ```bash
-   cd BlazorChatSimple
-   ```
-3. Execute a aplicação:
-   ```bash
-   dotnet run
-   ```
-4. Abra o navegador em `https://localhost:5001` ou `http://localhost:5000`
+**1. Acessar a Aplicação:**
+- Navegue para `https://localhost:5031`
+- Explore a página inicial para conhecer as funcionalidades
+- Acesse a página de status para verificar o funcionamento dos serviços
 
-##  Recursos de Design
+**2. Entrar no Sistema de Chat:**
+- Clique no botão "Acessar Chat" na página inicial
+- Ou navegue diretamente para `/chat`
+- Preencha o formulário de login com seu nome de usuário
 
-### Paleta de Cores
-- **Primária**: Gradiente roxo-azul (#667eea → #764ba2)
-- **Secundária**: Tons de cinza para neutralidade
-- **Acentos**: Bootstrap colors para estados e feedback
+**3. Escolher uma Sala:**
+- Selecione uma das salas disponíveis (Geral, Tecnologia, Discussões Livres)
+- Observe a lista de usuários online na sala escolhida
+- Familiarize-se com a interface de mensagens
 
-### Componentes Visuais
-- **Cards com Hover Effects** - Elevação e sombras dinâmicas
-- **Botões com Gradientes** - Estados visuais aprimorados
-- **Animações CSS** - Transições suaves e feedback visual
-- **Icons Font Awesome** - Iconografia moderna e consistente
+**4. Iniciar Conversas:**
+- Digite sua mensagem no campo de texto na parte inferior
+- Pressione Enter ou clique no botão de envio
+- Observe suas mensagens aparecendo em tempo real
 
-### Responsividade
-- **Mobile First** - Design adaptativo para dispositivos móveis
-- **Breakpoints Bootstrap** - Compatibilidade com diferentes telas
-- **Flexbox Layout** - Distribuição eficiente de espaço
+### Testando a Funcionalidade em Tempo Real
 
-## 🔮 Evoluções Futuras
+**Cenário de Teste Multi-Usuário:**
+1. Abra a aplicação em duas ou mais abas do navegador
+2. Faça login com nomes de usuário diferentes em cada aba
+3. Entre na mesma sala em todas as abas
+4. Envie mensagens alternadamente entre as abas
+5. Observe a sincronização instantânea das mensagens
+6. Teste mudanças entre salas diferentes
+7. Verifique as notificações de entrada e saída de usuários
 
-Este projeto serve como base para implementações mais avançadas:
+**Teste de Responsividade:**
+- Acesse a aplicação em dispositivos móveis
+- Teste a funcionalidade de chat em tablets
+- Verifique a adaptação da interface em diferentes resoluções
 
-### SignalR Real
-- Implementação completa do SignalR Hub
-- Comunicação bidirecional real entre clientes
-- Grupos de chat persistentes
+## Considerações Técnicas e Observações
 
-### Autenticação
-- Sistema de login/registro
-- Perfis de usuário personalizáveis
-- Autorização por salas
+### Persistência de Dados
+- **Armazenamento de Mensagens**: Todas as conversas são salvas automaticamente no banco de dados SQLite
+- **Gestão de Usuários**: Informações de usuários são mantidas durante a sessão ativa
+- **Histórico de Salas**: Cada sala mantém seu próprio histórico independente de mensagens
 
-### Persistência
-- Entity Framework Core para dados
-- Histórico de mensagens
-- Configurações de usuário
+### Gerenciamento de Estado
+- **Usuários Online**: Lista de usuários conectados é gerenciada em memória para performance
+- **Conexões SignalR**: Sistema robusto de reconexão automática em caso de perda de sinal
+- **Sincronização Multi-Tab**: Atualizações refletidas automaticamente em múltiplas abas do mesmo usuário
 
-### Funcionalidades Avançadas
-- Upload de arquivos e imagens
-- Mensagens privadas
-- Notificações push
-- Moderação de chat
+### Performance e Escalabilidade
+- **Otimização de Consultas**: Entity Framework configurado para queries eficientes
+- **Gestão de Conexões**: Pool de conexões otimizado para múltiplos usuários simultâneos
+- **Caching Inteligente**: Dados frequentemente acessados mantidos em cache para resposta rápida
 
-##  Conceitos Demonstrados
+### Design e Experiência do Usuário
+- **Interface Inspirada**: Design moderno baseado nas melhores práticas de UX/UI
+- **Acessibilidade**: Componentes desenvolvidos seguindo padrões de acessibilidade web
+- **Responsividade**: Funcionalidade completa garantida em todos os tipos de dispositivos
 
-### Blazor Server
-- **Componentes reutilizáveis** - Estruturação modular
-- **Binding bidirecional** - Sincronização automática UI/dados
-- **Event handling** - Resposta a interações do usuário
-- **State management** - Gerenciamento de estado da aplicação
-- **Lifecycle hooks** - Controle do ciclo de vida dos componentes
+## Roadmap e Evoluções Futuras
 
-### Padrões de UI
-- **Component communication** - Comunicação entre componentes
-- **Conditional rendering** - Renderização baseada em estado
-- **List rendering** - Exibição dinâmica de coleções
-- **Form handling** - Manipulação de formulários e validação
+Este projeto serve como fundação sólida para implementações mais avançadas e recursos empresariais:
 
-## 🤝 Contribuições
+### Autenticação e Segurança Avançada
+- **Sistema Completo de Autenticação**: Implementação de login/senha com hash seguro
+- **Autorização Baseada em Roles**: Diferentes níveis de permissão (Admin, Moderador, Usuário)
+- **Autenticação OAuth**: Integração com provedores externos (Google, Microsoft, GitHub)
+- **Criptografia End-to-End**: Proteção completa das mensagens em trânsito e repouso
 
-Este é um projeto de demonstração para fins educacionais e de portfólio. Sugestões e melhorias são sempre bem-vindas!
+### Funcionalidades de Comunicação Avançadas
+- **Mensagens Privadas**: Sistema de chat direto entre usuários
+- **Grupos Privados**: Criação de salas exclusivas com convite
+- **Chamadas de Voz e Vídeo**: Integração com WebRTC para comunicação multimídia
+- **Compartilhamento de Arquivos**: Upload e download de documentos, imagens e mídias
 
-##  Licença
+### Recursos de Experiência do Usuário
+- **Sistema de Reações**: Emojis e reações nas mensagens
+- **Mensagens com Formatação**: Suporte a Markdown, links e menções
+- **Notificações Push**: Alertas em tempo real mesmo com aplicação fechada
+- **Temas Personalizáveis**: Interface adaptável às preferências do usuário
 
-Este projeto está sob licença MIT - veja o arquivo LICENSE para detalhes.
+### Funcionalidades Administrativas
+- **Painel de Moderação**: Ferramentas para gerenciar usuários e conteúdo
+- **Analytics e Relatórios**: Métricas de uso e engagement
+- **Sistema de Backup**: Backup automático e recuperação de dados
+- **Monitoramento de Performance**: Observabilidade completa da aplicação
+
+### Integrações e APIs
+- **API REST Completa**: Endpoints para integração com aplicações externas
+- **Webhooks**: Notificações automáticas para sistemas terceiros
+- **Integração com Bots**: Suporte para assistentes virtuais e automação
+- **Sincronização Multi-Plataforma**: Apps mobile nativos sincronizados
+## Recursos de Design e Interface
+
+### Sistema de Design Moderno
+
+**Paleta de Cores Profissional:**
+- **Primária**: Gradiente moderno em tons de azul e roxo (#667eea → #764ba2)
+- **Secundária**: Escala de cinzas cuidadosamente calibrada para legibilidade
+- **Acentos**: Cores semânticas do Bootstrap para feedback visual consistente
+- **Contraste**: Todas as combinações seguem padrões WCAG para acessibilidade
+
+**Componentes Visuais Avançados:**
+- **Cards com Microinterações**: Efeitos de hover com elevação e sombras dinâmicas
+- **Botões Inteligentes**: Estados visuais claros com gradientes e transições suaves
+- **Animações CSS Otimizadas**: Transições de 60fps para feedback visual instantâneo
+- **Iconografia Consistente**: Font Awesome para ícones modernos e escaláveis
+
+### Arquitetura Responsiva
+
+**Estratégia Mobile-First:**
+- **Design Adaptativo**: Interface otimizada primeiramente para dispositivos móveis
+- **Breakpoints Inteligentes**: Utilização completa do sistema de grid do Bootstrap
+- **Layout Flexível**: Flexbox e CSS Grid para distribuição eficiente do espaço
+- **Touch Optimized**: Elementos interativos dimensionados para interação touch
+
+**Performance de Interface:**
+- **Lazy Loading**: Carregamento otimizado de componentes sob demanda
+- **Virtual Scrolling**: Renderização eficiente de listas longas de mensagens
+- **Debounced Updates**: Atualizações da UI otimizadas para evitar re-renders desnecessários
+
+## Conceitos Técnicos Demonstrados
+
+### Tecnologia Blazor Server
+
+**Arquitetura de Componentes:**
+- **Componentização Modular**: Estrutura reutilizável e escalável de componentes
+- **Data Binding Bidirecional**: Sincronização automática entre interface e dados
+- **Gerenciamento de Eventos**: Resposta eficiente a interações do usuário
+- **Gestão de Estado**: Controle centralizado do estado da aplicação
+- **Lifecycle Management**: Controle preciso do ciclo de vida dos componentes
+
+**Padrões de Interface:**
+- **Comunicação entre Componentes**: Fluxo de dados eficiente entre elementos
+- **Renderização Condicional**: Interface dinâmica baseada no estado da aplicação
+- **Renderização de Listas**: Exibição otimizada de coleções dinâmicas
+- **Manipulação de Formulários**: Validação e processamento de dados do usuário
+
+## Como Contribuir
+
+Este projeto foi desenvolvido como demonstração educacional e para fins de portfólio. Contribuições, sugestões e melhorias são sempre bem-vindas através de:
+
+- **Issues**: Reporte bugs ou sugira melhorias
+- **Pull Requests**: Contribua com código e documentação
+- **Discussões**: Compartilhe ideias e experiências
+- **Documentação**: Ajude a melhorar este README e outros documentos
+
+## Licença e Termos de Uso
+
+Este projeto está licenciado sob a licença MIT, permitindo uso livre, modificação e distribuição. Consulte o arquivo LICENSE para detalhes completos sobre os termos de uso.
 
 ---
 
-**Desenvolvido com ❤ usando ASP.NET Blazor Server**
+**Desenvolvido com dedicação usando ASP.NET Blazor Server**
 
-*Projeto criado para demonstrar as capacidades do Blazor Server na criação de aplicações web interativas e modernas.*
+*Projeto criado para demonstrar as capacidades avançadas do Blazor Server na criação de aplicações web interativas, modernas e escaláveis.*
