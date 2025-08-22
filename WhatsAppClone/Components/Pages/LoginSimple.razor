@@ -74,6 +74,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await Task.CompletedTask; // Adiciona await para satisfazer o compilador
         var httpContext = HttpContextAccessor.HttpContext;
         if (httpContext?.User?.Identity?.IsAuthenticated == true)
         {
@@ -99,7 +100,7 @@
                 errorMessage = "Usuário ou senha incorretos.";
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             errorMessage = "Erro ao fazer login. Tente novamente.";
         }

@@ -26,10 +26,6 @@
 else
 {
     <div class="whatsapp-container" @onclick="CloseChatMenuIfOpen">
-               }
-        catch
-        {
-        } Sidebar with chats list -->
         <div class="chats-sidebar">
             <div class="sidebar-header">
                 <div class="user-info">
@@ -165,7 +161,6 @@ else
             </div>
         </div>
 
-        <!-- Main chat area -->
         <div class="chat-main">
             @if (selectedChat == null)
             {
@@ -330,7 +325,7 @@ else
                     </button>
                     <div class="input-area">
                         <input type="text" placeholder="Digite uma mensagem" @bind="newMessage" 
-                               @onkeypress="HandleKeyPress" @onfocus="HandleInputFocus" @onblur="HandleInputBlur" />
+                               @onkeypress="HandleKeyPress" @oninput="HandleTyping" @onfocus="HandleInputFocus" @onblur="HandleInputBlur" />
                     </div>
                     <button class="btn-send" @onclick="SendMessage" disabled="@(string.IsNullOrWhiteSpace(newMessage))">
                         @if (string.IsNullOrWhiteSpace(newMessage))
@@ -347,7 +342,6 @@ else
         </div>
     </div>
 
-    <!-- New Chat Modal -->
     @if (showNewChatModal)
     {
         <div class="modal-overlay" @onclick="CloseNewChatModal">
@@ -639,6 +633,24 @@ else
         }
     }
 
+    private async Task HandleTyping()
+    {
+        if (selectedChat != null && hubConnection != null)
+        {
+            typingTimer?.Dispose();
+            
+            await hubConnection.InvokeAsync("StartTyping", selectedChat.Id);
+            
+            typingTimer = new System.Threading.Timer(async _ =>
+            {
+                if (selectedChat != null && hubConnection != null)
+                {
+                    await hubConnection.InvokeAsync("StopTyping", selectedChat.Id);
+                }
+            }, null, TimeSpan.FromSeconds(3), Timeout.InfiniteTimeSpan);
+        }
+    }
+
     private async Task HandleInputFocus()
     {
         if (selectedChat != null && hubConnection != null)
@@ -664,7 +676,6 @@ else
         }
         catch
         {
-            // Ignore JS interop errors
         }
     }
 
@@ -812,7 +823,6 @@ else
         }
         catch
         {
-            // Ignore delete chat errors
         }
     }
 
@@ -824,7 +834,6 @@ else
         }
         catch
         {
-            // Ignore clear history errors
         }
     }
 

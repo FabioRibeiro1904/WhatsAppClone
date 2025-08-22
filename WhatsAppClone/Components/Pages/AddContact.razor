@@ -107,7 +107,7 @@
             await Task.Delay(300);
             searchResults = await UserService.SearchUsersAsync(searchTerm);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             errorMessage = "Erro ao buscar usuários. Tente novamente.";
         }
@@ -135,7 +135,7 @@
             await Task.Delay(1000);
             Navigation.NavigateTo("/");
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             errorMessage = "Erro ao iniciar conversa. Tente novamente.";
         }

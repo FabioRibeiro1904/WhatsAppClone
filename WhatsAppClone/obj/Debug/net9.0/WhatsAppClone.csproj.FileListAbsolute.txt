@@ -133,3 +133,4 @@
 /Users/fabiolucioribeiro/Portifolio/Projetos/05-blazor-signalr-chat/WhatsAppClone/obj/Debug/net9.0/compressed/jrhyyfrcg4-mdlbgksdz1.gz
 /Users/fabiolucioribeiro/Portifolio/Projetos/05-blazor-signalr-chat/WhatsAppClone/obj/Debug/net9.0/compressed/zenomiq6be-62yvtrvk8x.gz
 /Users/fabiolucioribeiro/Portifolio/Projetos/05-blazor-signalr-chat/WhatsAppClone/obj/Debug/net9.0/compressed/gtq9xno1fe-vtys43pl51.gz
+/Users/fabiolucioribeiro/Portifolio/Projetos/05-blazor-signalr-chat/WhatsAppClone/obj/Debug/net9.0/WhatsAppClone.sourcelink.json
